@@ -3,7 +3,7 @@
   /***************************************
   * http://www.program-o.com
   * PROGRAM O
-  * Version: 2.4.2
+  * Version: 2.4.6
   * FILE: chatbot/conversation_start.php
   * AUTHOR: Elizabeth Perreau and Dave Morton
   * DATE: MAY 17TH 2014
@@ -53,16 +53,20 @@
   $form_vars_post = filter_input_array(INPUT_POST);
   $form_vars_get = filter_input_array(INPUT_GET);
 
-  $form_vars = ($form_vars_get !== null and $form_vars_post !== null)
-    ? array_merge($form_vars_get, $form_vars_post)
-    : ($form_vars_get !== null) ? $form_vars_get
-    : $form_vars_post;
+  $form_vars = array_merge((array)$form_vars_get, (array)$form_vars_post);
   #save_file(_LOG_PATH_ . 'Convo_start_form_vars.txt', print_r($form_vars, true));
-  $say = ($say !== '') ? $say : trim($form_vars['say']);				// 删除两端空格
+  $say = ($say !== '') ? $say : trim($form_vars['say']);// 删除两端空格
+  if (!isset($form_vars['say']))
+  {
+    error_log('Empty input! form vars = ' . print_r($form_vars, true) . PHP_EOL, 3, _LOG_PATH_ . 'convostart.txt');
+    $form_vars['say'] = '';
+  }
+  $say = ($say !== '') ? $say : trim($form_vars['say']);
   $session_name = 'PGOv' . VERSION;
   session_name($session_name);
   session_start();
   #save_file(_LOG_PATH_ . 'session.txt', print_r($_SESSION, true));
+  /** @noinspection PhpUndefinedVariableInspection */
   $debug_level = (isset($_SESSION['programo']['conversation']['debug_level'])) ? $_SESSION['programo']['conversation']['debug_level'] : $debug_level;
   $debug_level = (isset($form_vars['debug_level'])) ? $form_vars['debug_level'] : $debug_level;
   $debug_mode = (isset($form_vars['debug_mode'])) ? $form_vars['debug_mode'] : $debug_mode;
@@ -110,13 +114,8 @@
       $confirm = $sth->rowCount();
       // Get user id, so that we can clear the client properties
       $sql = "select `id` from `$dbn`.`users` where `session_id` = '$new_convo_id' limit 1;";
-      
-      $sth = $dbConn->prepare($sql);
-      $sth->execute();
-      $row = $sth->fetch();
-
-
-	 // 获取对应的 uid
+      $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
+      // 获取对应的 uid
       if ($row !== false)
       {
         $user_id = $row['id'];
@@ -133,6 +132,7 @@
 
 
     $say = run_pre_input_addons($convoArr, $say);		// 拼写检查
+    /** @noinspection PhpUndefinedVariableInspection */
     $bot_id = (isset($form_vars['bot_id'])) ? $form_vars['bot_id'] : $bot_id;
     runDebug(__FILE__, __FUNCTION__, __LINE__, "Details:\nUser say: " . $say . "\nConvo id: " . $convo_id . "\nBot id: " . $bot_id . "\nFormat: " . $form_vars['format'], 2);
     //get the stored vars
@@ -191,4 +191,5 @@
   $time = number_format(round(($time_end - $script_start) * 1000,7), 3);
   display_conversation($convoArr);
   runDebug(__FILE__, __FUNCTION__, __LINE__, "Conversation Ending. Elapsed time: $time milliseconds.", 0);
-  $convoArr = handleDebug($convoArr); // Make sure this is the last line in the file, so that all debug entries are captured.
+  $convoArr = handleDebug($convoArr, $time); // Make sure this is the last line in the file, so that all debug entries are captured.
+  session_gc();

@@ -1,13 +1,13 @@
-<?PHP
+<?php
   /***************************************
-    * http://www.program-o.com
-    * PROGRAM O
-    * Version: 2.4.2
-    * FILE: select_bots.php
-    * AUTHOR: Elizabeth Perreau and Dave Morton
-    * DATE: 05-26-2014
-    * DETAILS: Selects the current chatbot and displays editable config data
-    ***************************************/
+   * http://www.program-o.com
+   * PROGRAM O
+   * Version: 2.4.6
+   * FILE: select_bots.php
+   * AUTHOR: Elizabeth Perreau and Dave Morton
+   * DATE: 12-09-2014
+   * DETAILS: Selects the current chatbot and displays editable config data
+   ***************************************/
 
   $selectBot = '';
   $curBot = array();
@@ -33,37 +33,37 @@
     $selectBot .= getChangeList();
     $selectBot .= getSelectedBot();
   }
-  $_SESSION['poadmin']['format'] = $curBot['format'];
-  $bot_format = $curBot['format'];
+  $bot_format = (isset($curBot['format'])) ? $curBot['format'] : $format;
+  $_SESSION['poadmin']['format'] = $bot_format;
+  $topNav        = $template->getSection('TopNav');
+  $leftNav       = $template->getSection('LeftNav');
+  $main          = $template->getSection('Main');
+  $navHeader     = $template->getSection('NavHeader');
+  $FooterInfo    = getFooter();
+  $errMsgClass   = (!empty($msg)) ? "ShowError" : "HideError";
+  $errMsgStyle   = $template->getSection($errMsgClass);
+  $noLeftNav     = '';
+  $noTopNav      = '';
+  $noRightNav    = $template->getSection('NoRightNav');
+  $headerTitle   = 'Actions:';
+  $pageTitle     = 'My-Program O - Select or Edit a Bot';
+  $mainContent   = $selectBot;
+  $mainTitle     = 'Choose/Edit a Bot';
 
-    $topNav        = $template->getSection('TopNav');
-    $leftNav       = $template->getSection('LeftNav');
-    $main          = $template->getSection('Main');
-    $topNavLinks   = makeLinks('top', $topLinks, 12);
-    $navHeader     = $template->getSection('NavHeader');
-    $leftNavLinks  = makeLinks('left', $leftLinks, 12);
-    $FooterInfo    = getFooter();
-    $errMsgClass   = (!empty($msg)) ? "ShowError" : "HideError";
-    $errMsgStyle   = $template->getSection($errMsgClass);
-    $noLeftNav     = '';
-    $noTopNav      = '';
-    $noRightNav    = $template->getSection('NoRightNav');
-    $headerTitle   = 'Actions:';
-    $pageTitle     = 'My-Program O - Select or Edit a Bot';
-    $mainContent   = $selectBot;
-    $mainTitle     = 'Choose/Edit a Bot';
-
-function getBotParentList($current_parent) {
+  /**
+   * Returns a list of current, active chatbots, for selecting a parent chatbot
+   *
+   * @param $current_parent
+   * @return string
+   */
+  function getBotParentList($current_parent) {
     //db globals
     global$dbConn;
   
   //get active bots from the db
   if(empty($current_parent)) $current_parent = 0;
   $sql = "SELECT * FROM `bots` where bot_active = '1'";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $result = $sth->fetchAll();
-
+  $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
   $options = '                  <option value="0"[noBot]>No Parent Bot</option>';
 
   foreach ($result as $row) {
@@ -82,10 +82,15 @@ function getBotParentList($current_parent) {
 }
 
 
-function getSelectedBot() {
+  /**
+   * Returns an HTML form, filled with the current chatbot's configuration data
+   *
+   *
+   * @return string
+   */
+  function getSelectedBot() {
   global $dbConn, $template, $pattern, $remember_up_to, $conversation_lines, $error_response, $curBot, $unknown_user;
   $bot_conversation_lines = $conversation_lines;
-  $remember_up_to = $remember_up_to;
   $bot_default_aiml_pattern = $pattern;
   $bot_error_response = $error_response;
   $bot_unknown_user = $unknown_user;
@@ -116,15 +121,12 @@ function getSelectedBot() {
   $bot_id = (isset($_SESSION['poadmin']['bot_id'])) ? $_SESSION['poadmin']['bot_id'] : 'new';
   if($bot_id != "new")
   {
-    #$bot_id = $_SESSION['poadmin']['bot_id'];
-    //get data for the currently selected bot from the db
+    $sql = "SELECT count(*) FROM `aiml` where bot_id = :bot_id;";
+    $row = db_fetch($sql, array(':bot_id'=>$bot_id), __FILE__, __FUNCTION__, __LINE__);
+    $aiml_count = ($row['count(*)'] == 0) ? 'no' : number_format($row['count(*)']);
     $sql = "SELECT * FROM `bots` where bot_id = :bot_id;";
-    $sth = $dbConn->prepare($sql);
-    $sth->bindValue(':bot_id', $bot_id);
-    $sth->execute();
-    $row = $sth->fetch();
+    $row = db_fetch($sql, array(':bot_id'=>$bot_id), __FILE__, __FUNCTION__, __LINE__);
     $curBot = $row;
-    //exit('<pre>Result = ' . print_r($result, true));
       foreach ($row as $key => $value) {
         if (strstr($key,'bot_') != false){
           $tmp = '';
@@ -135,7 +137,7 @@ function getSelectedBot() {
           $$tmp = $value;
         }
       }
-      if($bot_active=="1") {
+      if($bot_active == "1") {
         $sel_yes = ' selected="selected"';
       }
       else {
@@ -171,7 +173,8 @@ function getSelectedBot() {
       elseif($bot_debugshow=="4") {
         $ds_iv = ' selected="selected"';
       }
-      if($bot_debugmode=="0") {
+    /** @noinspection PhpUndefinedVariableInspection */
+    if($bot_debugmode=="0") {
         $dm_ = ' selected="selected"';
       }
       elseif($bot_debugmode=="1") {
@@ -197,7 +200,7 @@ function getSelectedBot() {
     $action = "add";
     $bot_format = '';
     $bot_conversation_lines = $conversation_lines;
-    $remember_up_to = $remember_up_to;
+    //$remember_up_to = $remember_up_to;
     $bot_default_aiml_pattern = $pattern;
     $bot_error_response = $error_response;
     $bot_debugemail = '';
@@ -207,7 +210,7 @@ function getSelectedBot() {
   }
   $parent_options = getBotParentList($bot_parent_id);
   $searches = array(
-    '[bot_id]','[bot_name]','[bot_desc]','[parent_options]','[sel_yes]','[sel_no]',
+    '[bot_id]','[bot_name]','[aiml_count]','[bot_desc]','[parent_options]','[sel_yes]','[sel_no]',
     '[sel_html]','[sel_xml]','[sel_json]','[sel_session]','[sel_db]','[sel_fyes]',
     '[sel_fno]','[sel_fuyes]','[sel_funo]','[bot_conversation_lines]','[remember_up_to]',
     '[bot_debugemail]','[dm_]','[dm_i]','[dm_ii]','[dm_iii]','[ds_]','[ds_i]','[ds_ii]',
@@ -221,86 +224,91 @@ function getSelectedBot() {
   return $form;
 }
 
-function updateBotSelection() {
-  //db globals
-  global $dbConn, $msg, $format, $post_vars;
-  $logFile = _LOG_URL_ . 'admin.error.log';
-  
-  $msg = '';
-  $bot_id = $post_vars['bot_id'];
-  $sql = "select * from bots where bot_id = $bot_id;";
-  $sth = $dbConn->prepare($sql);
-  $sth->execute();
-  $result = $sth->fetch();
-  //exit("<pre>\nResult = " . print_r($result, true) . "\nPostVars = " . print_r($post_vars, true));
-  $sql = '';
-  foreach($post_vars as $key => $value) {
-    $value = str_replace("'", "\'", $value);
-    $value = str_replace("\\'", "\'", $value);
-    $value = str_replace('"', '\"', $value);
-    $value = str_replace('\\"', '\"', $value);
-    if($key == "bot_id" || $key == "action" || !isset($result[$key])) continue;
+  /**
+   * Updates the database whth the current chatbot's modified configuration data
+   *
+   *
+   * @return string
+   */
+  function updateBotSelection()
+  {
+    global $dbConn, $msg, $format, $post_vars;
+    $logFile = _LOG_URL_ . 'admin.error.log';
+    $msg = '';
+    $bot_id = $post_vars['bot_id'];
+    $sql = "select * from bots where bot_id = $bot_id;";
+    $result = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
+    $sql = '';
+    foreach($post_vars as $key => $value) {
+      $value = str_replace("'", "\'", $value);
+      $value = str_replace("\\'", "\'", $value);
+      $value = str_replace('"', '\"', $value);
+      $value = str_replace('\\"', '\"', $value);
+      if($key == "bot_id" || $key == "action" || !isset($result[$key])) continue;
       if($result[$key] != $post_vars[$key]) {
         $sql .= "UPDATE `bots` SET `$key` ='$value' where `bot_id` = '".$post_vars['bot_id']."' limit 1;<br>\n";
       }
     }
-      //exit("Update SQL = $sql");
-      if (!empty($sql))
-      {
-        $sth = $dbConn->prepare($sql);
-        $sth->execute();
-        $affectedRows = $sth->rowCount();
-        if($affectedRows == 0) {
-          $msg = "Error updating bot details. See the <a href=\"$logFile\">error log</a> for details.<br />";
-          trigger_error("There was a problem adding '$key' to the database. The value was '$value'.");
-          break;
-        }
-      }
-      else
-      {
-        $msg = 'Nothing seems to have been modified. No changes made.';
-      }
-
-  $format = filter_input(INPUT_POST,'format');
-
-  if (strtoupper($format) !== strtoupper($format))
-  {
-    $format = strtoupper($format);
-    $cfn = _CONF_PATH_ . 'global_config.php';
-    $configFile = file(_CONF_PATH_ . 'global_config.php',FILE_IGNORE_NEW_LINES);
-    $search = '    $format = \'' . $format . '\';';
-    $replace = '    $format = \'' . $format . '\';';
-    $index = array_search($search, $configFile);
-    if (false === $index)
+    if (!empty($sql))
     {
-      $msg .= "Error updating the config file. See the <a href=\"$logFile\">error log</a> for details.<br />";
-      trigger_error("There was a problem with updating the default format in the config file. Please edit the value manually and submit a bug report.");
+      $sth = $dbConn->prepare($sql);
+      $sth->execute();
+      $affectedRows = $sth->rowCount();
+      if($affectedRows == 0) {
+        $msg = "Error updating bot details. See the <a href=\"$logFile\">error log</a> for details.<br />";
+        trigger_error("There was a problem adding '$key' to the database. The value was '$value'.");
+        //return $msg;
+      }
     }
     else
     {
-      $configFile[$index] = $replace;
-      $configContent = implode("\n", $configFile);
-      $x = file_put_contents(_CONF_PATH_ . 'global_config.php', $configContent);
+      $msg = 'Nothing seems to have been modified. No changes made.';
     }
+    $format = filter_input(INPUT_POST,'format');
+
+    if (strtoupper($format) !== strtoupper($format))
+    {
+      $format = strtoupper($format);
+      $cfn = _CONF_PATH_ . 'global_config.php';
+      $configFile = file(_CONF_PATH_ . 'global_config.php',FILE_IGNORE_NEW_LINES);
+      $search = '    $format = \'' . $format . '\';';
+      $replace = '    $format = \'' . $format . '\';';
+      $index = array_search($search, $configFile);
+      if (false === $index)
+      {
+        $msg .= "Error updating the config file. See the <a href=\"$logFile\">error log</a> for details.<br />";
+        trigger_error("There was a problem with updating the default format in the config file. Please edit the value manually and submit a bug report.");
+      }
+      else
+      {
+        $configFile[$index] = $replace;
+        $configContent = implode("\n", $configFile);
+        $x = file_put_contents(_CONF_PATH_ . 'global_config.php', $configContent);
+      }
+    }
+    if($msg == '') {
+      $msg = 'Bot details updated.';
+    }
+    return $msg;
   }
-  if($msg == '') {
-    $msg = 'Bot details updated.';
-  }
-
-  return $msg;
-
-}
 
 
-function addBot() {
+  /**
+   * Adds a new chatbot to the database
+   *
+   *
+   * @return string
+   */
+  function addBot() {
   //db globals
   global $dbConn, $msg, $post_vars;
   
   foreach ($post_vars as $key => $value) {
     $$key = trim($value);
   }
-  
-  $sql = <<<endSQL
+
+    /** @noinspection PhpUndefinedVariableInspection */
+    $sql = <<<endSQL
 INSERT INTO `bots`(`bot_id`, `bot_name`, `bot_desc`, `bot_active`, `bot_parent_id`, `format`, `save_state`, `conversation_lines`, `remember_up_to`, `debugemail`, `debugshow`, `debugmode`, `default_aiml_pattern`, `error_response`)
 VALUES (NULL,'$bot_name','$bot_desc','$bot_active','$bot_parent_id','$format','$save_state','$conversation_lines','$remember_up_to','$debugemail','$debugshow','$debugmode','$aiml_pattern','$error_response');
 endSQL;
@@ -325,9 +333,16 @@ endSQL;
   return $msg;
 }
 
-function make_bot_predicates($bot_id)
+  /**
+   * Adds default predicate (personality) data to the database for the current chatbot
+   *
+   * @param $bot_id
+   * @return string
+   */
+  function make_bot_predicates($bot_id)
 {
-  global $dbConn;
+  global $dbConn, $bot_name;
+  $msg = '';
 
   $sql = <<<endSQL
 INSERT INTO `botpersonality` VALUES
@@ -405,15 +420,19 @@ endSQL;
   return $msg;
 }
 
-function changeBot() {
+  /**
+   * Changes the current chatbot
+   *
+   *
+   * @return void
+   */
+  function changeBot() {
   global $dbConn, $msg, $bot_id, $post_vars;
   $botId = (isset($post_vars['bot_id'])) ? $post_vars['bot_id'] : $bot_id;
   
   if($post_vars['bot_id']!="new") {
     $sql = "SELECT * FROM `bots` WHERE bot_id = '$botId'";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $row = $sth->fetch();
+    $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
     $count = count($row);
     if($count > 0) {
       $_SESSION['poadmin']['format'] = $row['format'];
@@ -429,22 +448,22 @@ function changeBot() {
       $_SESSION['poadmin']['bot_name']='<b class="red">unnamed bot</b>';
       $_SESSION['poadmin']['bot_id']="new";
     }
+    header("Location: index.php?page=select_bots");
 }
 
 
-function getChangeList() {
-  //db globals
+  /**
+   * Returns an HTML form for selecting a chatbot from the database
+   *
+   *
+   * @return string
+   */
+  function getChangeList() {
   global $dbConn, $template;
   $bot_id = (isset($_SESSION['poadmin']['bot_id'])) ? $_SESSION['poadmin']['bot_id'] : 0;
   $botId = $bot_id;
-
-  $inputs='';
-  //get bot names from the db
   $sql = "SELECT * FROM `bots` ORDER BY bot_name";
-  $sth = $dbConn->prepare($sql);
-  $sth->execute();
-  $result = $sth->fetchAll();
-  $pResult = print_r($result, true);
+  $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
   $options = '                <option value="new">Add New Bot</option>' . "\n";
   foreach ($result as $row) {
     $options .= "<!-- bot ID = {$row['bot_id']}, $botId -->\n";
@@ -463,5 +482,3 @@ function getChangeList() {
   $form = str_replace('[options]', $options, $form);
   return $form;
 }
-
-?>

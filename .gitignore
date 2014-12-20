@@ -4,9 +4,12 @@
 
 admin/*.log
 admin/skins
+admin/unused
+admin/unused/*
 !admin/downloads
 admin/downloads/*
 !admin/downloads/index.html
+admin/ses*
 config/global_config.php
 config/global_config*.php
 config/uploads/*

@@ -1,12 +1,15 @@
 <?php
-//-----------------------------------------------------------------------------------------------
-//My Program-O Version: 2.4.2
-//Program-O  chatbot admin area
-//Written by Elizabeth Perreau and Dave Morton
-//DATE: MAY 17TH 2014
-//for more information and support please visit www.program-o.com
-//-----------------------------------------------------------------------------------------------
-// main.php
+
+  /***************************************
+    * http://www.program-o.com
+    * PROGRAM O
+    * Version: 2.4.6
+    * FILE: main.php
+    * AUTHOR: Elizabeth Perreau and Dave Morton
+    * DATE: 12-03-2014
+    * DETAILS: Displays the "Home"  section of the admin page
+    ***************************************/
+
     $noRightNav    = $template->getSection('NoRightNav');
     $logo          = $template->getSection('Logo');
     $topNav        = $template->getSection('TopNav');
@@ -17,9 +20,9 @@
     #$lowerScripts  = '';
     #$pageTitleInfo = '';
     $divDecoration = $template->getSection('DivDecoration');
-    $topNavLinks   = makeLinks('top', $topLinks, 12);
+    
     $navHeader     = $template->getSection('NavHeader');
-    $leftNavLinks  = makeLinks('left', $leftLinks, 12);
+    
     $mainTitle     = 'Home';
     $rightNavLinks = '';
     $FooterInfo    = getFooter();

@@ -1,12 +1,13 @@
 <?php
-//-----------------------------------------------------------------------------------------------
-//My Program-O Version: 2.4.2
-//Program-O  chatbot admin area
-//Written by Elizabeth Perreau and Dave Morton
-//DATE: MAY 17TH 2014
-//for more information and support please visit www.program-o.com
-//-----------------------------------------------------------------------------------------------
-// spellcheck.php
+  /***************************************
+   * http://www.program-o.com
+   * PROGRAM O
+   * Version: 2.4.6
+   * FILE: spellcheck.php
+   * AUTHOR: Elizabeth Perreau and Dave Morton
+   * DATE: 12-09-2014
+   * DETAILS: Displays the admin page for the spellcheck plugin and provides access to various features
+   ***************************************/
   $msg = '';
   $upperScripts = <<<endScript
 
@@ -75,10 +76,10 @@ endScript;
     $topNav        = $template->getSection('TopNav');
     $leftNav       = $template->getSection('LeftNav');
     $main          = $template->getSection('Main');
-    $topNavLinks   = makeLinks('top', $topLinks, 12);
+    
     $navHeader     = $template->getSection('NavHeader');
     $rightNav      = $template->getSection('RightNav');
-    $leftNavLinks  = makeLinks('left', $leftLinks, 12);
+    
     $rightNavLinks = getMisspelledWords();
     $FooterInfo    = getFooter();
     $errMsgClass   = (!empty($msg)) ? "ShowError" : "HideError";
@@ -95,14 +96,19 @@ endScript;
     $mainContent = str_replace('[sc_enabled]', $sc_enabled, $mainContent);
     $rightNav    = str_replace('[rightNavLinks]', $rightNavLinks, $rightNav);
     $rightNav    = str_replace('[navHeader]', $navHeader, $rightNav);
-    $rightNav    = str_replace('[headerTitle]', paginate(), $rightNav);
+    $rightNav    = str_replace('[headerTitle]', scPaginate(), $rightNav);
 
-  function paginate() {
+  /**
+   * Function scPaginate
+   *
+   *
+   * @return string
+   */
+  function scPaginate()
+  {
     global $dbConn, $get_vars;
     $sql = "select count(*) from `spellcheck` where 1";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $row = $sth->fetch();
+    $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
     $rowCount = $row['count(*)'];
     $lastPage = intval($rowCount / 50);
     $remainder = ($rowCount / 50) - $lastPage;
@@ -127,6 +133,12 @@ endScript;
     return $out;
   }
 
+  /**
+   * Function getMisspelledWords
+   *
+   *
+   * @return string
+   */
   function getMisspelledWords() {
     global $dbConn, $template, $get_vars;
     # pagination variables
@@ -140,9 +152,7 @@ endScript;
     $sql = "select `id`,`missspelling` from `spellcheck` where 1 order by abs(`id`) asc limit $startEntry, 50;";
     $baseLink = $template->getSection('NavLink');
     $links = '      <div class="userlist">' . "\n";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $result = $sth->fetchAll();
+    $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
     $count = 0;
     foreach ($result as $row) {
       $linkId = $row['id'];
@@ -163,7 +173,13 @@ endScript;
     return $links;
   }
 
-function spellCheckForm() {
+  /**
+   * Function spellCheckForm
+   *
+   *
+   * @return mixed|string
+   */
+  function spellCheckForm() {
   global $template, $get_vars;
   $out = $template->getSection('SpellcheckForm');
   $group = (isset($get_vars['group'])) ? $get_vars['group'] : 1;
@@ -171,7 +187,13 @@ function spellCheckForm() {
   return $out;
 }
 
-function insertSpell() {
+  /**
+   * Function insertSpell
+   *
+   *
+   * @return string
+   */
+  function insertSpell() {
     global $dbConn, $template, $msg, $post_vars;
     $correction = trim($post_vars['correction']);
     $missspell = trim($post_vars['missspell']);
@@ -195,7 +217,13 @@ function insertSpell() {
     return $msg;
 }
 
-function delSpell($id) {
+  /**
+   * Function delSpell
+   *
+   * * @param $id
+   * @return void
+   */
+  function delSpell($id) {
     global $dbConn, $template, $msg;
     
     if($id=="") {
@@ -216,15 +244,19 @@ function delSpell($id) {
 }
 
 
-function runSpellSearch() {
+  /**
+   * Function runSpellSearch
+   *
+   *
+   * @return string
+   */
+  function runSpellSearch() {
     global $dbConn, $template, $post_vars;
     
     $i=0;
     $search = trim($post_vars['search']);
     $sql = "SELECT * FROM `spellcheck` WHERE `missspelling` LIKE '%$search%' OR `correction` LIKE '%$search%' LIMIT 50";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $result = $sth->fetchAll();
+    $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
     $htmltbl = '<table>
                   <thead>
                     <tr>
@@ -264,15 +296,19 @@ function runSpellSearch() {
     return $htmlresults;
 }
 
-function editSpellForm($id) {
+  /**
+   * Function editSpellForm
+   *
+   * * @param $id
+   * @return mixed|string
+   */
+  function editSpellForm($id) {
   global $dbConn, $template, $get_vars;
   $group = (isset($get_vars['group'])) ? $get_vars['group'] : 1;
   $form   = $template->getSection('EditSpellForm');
   
   $sql    = "SELECT * FROM `spellcheck` WHERE `id` = '$id' LIMIT 1";
-  $sth = $dbConn->prepare($sql);
-  $sth->execute();
-  $row = $sth->fetch();
+  $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
   $uc_missspelling = (IS_MB_ENABLED) ? mb_strtoupper($row['missspelling']) : strtoupper($row['missspelling']);
   $uc_correction = (IS_MB_ENABLED) ? mb_strtoupper($row['correction']) : strtoupper($row['correction']);
   $form   = str_replace('[id]', $row['id'], $form);

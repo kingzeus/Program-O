@@ -1,12 +1,13 @@
 <?php
-//-----------------------------------------------------------------------------------------------
-//My Program-O Version: 2.4.2
-//Program-O  chatbot admin area
-//Written by Elizabeth Perreau and Dave Morton
-//DATE: MAY 17TH 2014
-//for more information and support please visit www.program-o.com
-//-----------------------------------------------------------------------------------------------
-// members.php
+  /***************************************
+    * http://www.program-o.com
+    * PROGRAM O
+    * Version: 2.4.6
+    * FILE: members.php
+    * AUTHOR: Elizabeth Perreau and Dave Morton
+    * DATE: 12-12-2014
+    * DETAILS: Administers member (admin) accounts
+    ***************************************/
   ini_set('memory_limit','128M');
   ini_set('max_execution_time','0');
   $post_vars = filter_input_array(INPUT_POST);
@@ -15,49 +16,17 @@
   $action = (isset($post_vars['action'])) ? ucfirst(strtolower($post_vars['action'])) : 'Add';
   if (!empty($post_vars)) {
     $msg = save($action);
-    #$action = ($action == 'editfromlist') ? 'Edit' : $action;
   }
 
   $id = (isset($post_vars['id']) and $action != 'Add') ? $post_vars['id'] : getNextID();
   $id = ($id <= 0) ? getNextID() : $id;
   if (isset($post_vars['memberSelect'])) {
     $id = $post_vars['memberSelect'];
-    getMemberData($post_vars['memberSelect']);
+    $data = getMemberData($post_vars['memberSelect']);
+    $id = $data['id'];
+    $user_name = $data['user_name'];
   }
-  $upperScripts = <<<endScript
-
-    <script type="text/javascript">
-<!--
-      function showMe() {
-        var sh = document.getElementById('showHelp');
-        var tf = document.getElementById('membersForm');
-        sh.style.display = 'block';
-        tf.style.display = 'none';
-      }
-      function hideMe() {
-        var sh = document.getElementById('showHelp');
-        var tf = document.getElementById('membersForm');
-        sh.style.display = 'none';
-        tf.style.display = 'block';
-      }
-      function showHide() {
-        var display = document.getElementById('showHelp').style.display;
-        switch (display) {
-          case '':
-          case 'none':
-            return showMe();
-            break;
-          case 'block':
-            return hideMe();
-            break;
-          default:
-            alert('display = ' + display);
-        }
-      }
-//-->
-    </script>
-endScript;
-
+  $upperScripts = $template->getSection('UpperScripts');
   $XmlEntities = array(
     '&amp;'  => '&',
     '&lt;'   => '<',
@@ -71,13 +40,10 @@ endScript;
   $membersForm       = $template->getSection('MembersForm');
   $members_list_form = $template->getSection('MembersListForm');
   $showHelp          = $template->getSection('MembersShowHelp');
-
   $topNav            = $template->getSection('TopNav');
   $leftNav           = $template->getSection('LeftNav');
   $main              = $template->getSection('Main');
-  $topNavLinks       = makeLinks('top', $topLinks, 12);
   $navHeader         = $template->getSection('NavHeader');
-  $leftNavLinks      = makeLinks('left', $leftLinks, 12);
   $FooterInfo        = getFooter();
   $errMsgClass       = (!empty($msg)) ? "ShowError" : "HideError";
   $errMsgStyle       = $template->getSection($errMsgClass);
@@ -99,9 +65,14 @@ endScript;
   $mainTitle         = str_replace('[helpLink]', $template->getSection('HelpLink'), $mainTitle);
 
 
+  /**
+   * Function save
+   *
+   * * @param $action
+   * @return string
+   */
   function save($action) {
     global $dbConn, $dbn, $action, $post_vars;
-    #return 'action = ' . $action;
     if (isset($post_vars['memberSelect'])) {
       $id = $post_vars['memberSelect'];
     }
@@ -135,7 +106,6 @@ endScript;
       $sql = '';
       $out = '';
     }
-    //$x = (!empty($sql)) ? updateDB($sql) : '';
     if (!empty($sql))
     {
       save_file(_LOG_PATH_ . 'memberSQL.txt', $sql);
@@ -145,20 +115,22 @@ endScript;
 
       //
     }
-    #return "action = $action<br />\n SQL = $sql";
     return $out;
   }
 
 
-
-    function getAdminsOpts() {
+  /**
+   * Function getAdminsOpts
+   *
+   *
+   * @return string
+   */
+  function getAdminsOpts() {
     global $dbn, $dbConn;
     $out = "                  <!-- Start List of Current Admin Accounts -->\n";
     $optionTemplate = "                  <option value=\"[val]\">[key]</option>\n";
     $sql = 'SELECT id, user_name FROM myprogramo order by user_name;';
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $result = $sth->fetchAll();
+    $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
     foreach ($result as $row) {
       $user_name = $row['user_name'];
       $id = $row['id'];
@@ -171,27 +143,31 @@ endScript;
     return $out;
   }
 
+  /**
+   * Function getMemberData
+   *
+   * * @param $id
+   * @return void
+   */
   function getMemberData($id) {
-    if ($id <= 0) return false;
-    global $dbn, $user_name, $id, $dbConn;
+    if ($id <= 0) return;
+    global $user_name, $dbConn;
     $sql = "select id, user_name from myprogramo where id = $id limit 1;";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $row = $sth->fetch();
-    $user_name = $row['user_name'];
-    $id = $row['id'];
-    
+    $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
+    return $row;
   }
 
+  /**
+   * Function getNextID
+   *
+   *
+   * @return int
+   */
   function getNextID() {
-    global $dbn, $user_name, $dbConn;
+    global $dbConn;
     $sql = "select id from myprogramo order by id desc limit 1;";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $row = $sth->fetch();
-    $id = $row['id'];
-    
-    return $id + 1;
+    $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
+    return $row['id'] + 1;
   }
 
 ?>

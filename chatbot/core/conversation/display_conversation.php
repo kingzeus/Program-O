@@ -3,7 +3,7 @@
   /***************************************
   * http://www.program-o.com
   * PROGRAM O
-  * Version: 2.4.2
+  * Version: 2.4.6
   * FILE: chatbot/core/conversation/display_conversation.php
   * AUTHOR: Elizabeth Perreau and Dave Morton
   * DATE: MAY 17TH 2014
@@ -27,11 +27,7 @@
     if (empty ($bot_name))
     {
       $sql = "select `bot_name` from `bots` where `bot_id` = $bot_id limit 1;";
-      
-      $sth = $dbConn->prepare($sql);
-      $sth->execute();
-      $row = $sth->fetch();
-
+      $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
       $bot_name = $row['bot_name'];
     }
     if ($convoArr['conversation']['conversation_lines'] != 0)
@@ -50,13 +46,7 @@
         AND `convo_id` = '" . $convoArr['conversation']['convo_id'] . "'
         ORDER BY id DESC $limit ";
     runDebug(__FILE__, __FUNCTION__, __LINE__, "get_conversation SQL: $sql", 3);
-    
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $result = $sth->fetchAll();
-
-
-
+    $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
     if (count($result) > 0)
     {
       foreach ($result as $row)
@@ -191,12 +181,13 @@
   }
 
   /**
-  * function display_conversation()
-  * Displays the output of the conversation if the current format is XML or JSON and updated referenced $display if html
-  * @link http://blog.program-o.com/?p=1233
-  * @param (array) $convoArr
-  * @return (void) [return value]
-  **/
+   * function display_conversation()
+   * Displays the output of the conversation if the current format is XML or JSON and updated referenced $display if html
+   *
+   * @link  http://blog.program-o.com/?p=1233
+   * @param (array) $convoArr
+   * @return void (void) [return value]
+   */
   function display_conversation($convoArr)
   {
     $display = $convoArr['send_to_user'];

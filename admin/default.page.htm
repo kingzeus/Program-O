@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="[charset]">
     <title>[pageTitle]</title>
     <link rel="stylesheet" href="[styleSheet]"[mediaType] type="text/css" />
-    [noLeftNav][noRightNav][upperScripts][errMsgStyle]
+    [extraCSS][noLeftNav][noRightNav][upperScripts][errMsgStyle]
   </head>
 <!-- Section Header End -->
 <!-- Section PageBody Start -->
@@ -73,7 +73,7 @@ between the start and end section tags are the only parts of the template that a
 [divDecoration]
           <div class="validXHTML">
             <a href="http://validator.w3.org/check?uri=referer">
-              <img src="images/valid-xhtml10.png" title="Valid XHTML 1.0 Strict" alt="Valid XHTML 1.0 Strict" height="31" width="88" style="border: none" />
+              <img src="images/html5_valid.png" title="Valid HTML5" alt="Valid HTML5" height="31" width="88" style="border: none" />
             </a>
           </div>
           <div id="footer_content">
@@ -236,6 +236,9 @@ between the start and end section tags are the only parts of the template that a
                   <input type="text" name="error_response" id="error_response" value="[bot_error_response]" />
                 </span>
               </td>
+            </tr>
+            <tr>
+              <td colspan="2" class="center"><span class="label">The chatbot "[bot_name]" has [aiml_count] AIML categories in the database.</span></td>
             </tr>
           </table>
         </div>
@@ -521,11 +524,17 @@ between the start and end section tags are the only parts of the template that a
 <!-- Section DownloadShowHelp Start -->
 [blank]            <div id="showHelp">
               <h3>Help...</h3>
-              <dd> This help panel is under construction.</dd>
+              <dd>
+                First, choose whether to download the files as AIML files (the default action)
+                or as SQL files. Once you've made all of your selections, simply click the Download
+                button, and your request will be processed. This processing should take only a few
+                seconds. A link will be given on the off chance that your file doesn't pop up for
+                downloading.
+              </dd>
             </div>
 <!-- Section DownloadShowHelp End -->
 <!-- Section HelpLink Start -->
-            <img src="images/help.png" onclick="showHide();" title="Click to toggle help" alt="Click to toggle help" border=0 />
+            <img src="images/help.png" onclick="showHide();" title="Click to toggle help" alt="Click to toggle help" style="cursor: pointer" />
 <!-- Section HelpLink End -->
 <!-- Section RSSItemTemplate Start -->
           <p>[rssRowTitle]</p>
@@ -536,7 +545,7 @@ between the start and end section tags are the only parts of the template that a
         <div id="logoLink" onclick="[showHide]Logo()">[showHide] Logo</div>
 <!-- Section LogoLink End -->
 <!-- Section LogoLinkScript Start -->
-    <script type="text/javascript">
+[blank]    <script type="text/javascript" id="lowerScripts">
       function ShowLogo() {
         //setDisplay('1');
         var body = document.body;
@@ -871,3 +880,233 @@ between the start and end section tags are the only parts of the template that a
             </div>
           </div>
 <!-- Section StatsPage End -->
+<!-- Section EditAimlPage Start -->
+[blank]          <div class="yui3-skin-sam editaiml-table">
+            <div class='search-msg'></div>
+          </div>
+          <script src="http://yui.yahooapis.com/3.18.0/build/yui/yui-min.js"></script>
+          <script src="scripts/editAiml.js"></script>
+<!-- Section EditAimlPage End -->
+<!-- Section DataTable Start -->
+[blank]      <div class="editaiml-table">
+        <div class='search-msg'></div>
+          <table id="[table_id]" class="datatable-table">
+            <thead class="datatable-columns">
+[thead_content]
+            </thead>
+            <tfoot>
+[tfoot_content]
+            </tfoot>
+            <tbody>
+[tbody_content]
+            </tbody>
+          </table>
+        </div>
+<!-- Section DataTable End -->
+<!-- Section DataTableScript Start -->
+[blank]    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.datatables.net/1.10.3/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="scripts/jeditable.js"></script>
+    <script type="text/javascript" src="scripts/jquery.datatable.editable.js"></script>
+    <script type="text/javascript">
+      $(function(){
+        $('#[table_id] thead th.search').each( function () {
+          var title = $(this).text();
+          $(this).html( '<input type="text" placeholder="Search ' + title + '" />' );
+        });
+        var editOptions = {
+          sUpdateURL: 'seTest.php?action=test',
+        };
+        var tableOptions = {
+          scrollY: '340','bPaginate': true,
+          'sDom': 'lpit'
+        };
+        var table = $('#[table_id]').dataTable(tableOptions).makeEditable(editOptions);//
+      });
+    </script>
+<!-- Section DataTableScript End -->
+<!-- Section DataTableCSS Start -->
+<link rel="stylesheet" href="datatables.css" type="text/css">
+[blank]
+<!-- Section DataTableCSS End -->
+<!-- Section DownloadForm Start -->
+[blank]          <div id="downloadFormMulti" class="fullWidth noBorder downloadForms">
+            <div class="row center">Please select the AIML files you wish to download from the selections below.</div>
+            <hr class="eightyPercent">
+            <form action="index.php?page=download" method="POST" id="downloadForm">
+              <table class="centered">
+                <tr>
+                  <td class="center">
+                    <input type="radio" name="type" id="actionGetFileAIML" checked="checked" value="AIML">
+                    <label for="actionGetFileAIML" style="width: 250px">Download files as AIML</label>
+                  </td>
+                  <td class="center">
+                    <input type="checkbox" id="cbSelectAll">
+                    <label for="cbSelectAll" style="width: 250px">Select all files</label>
+                  </td>
+                  <td class="center">
+                    <input type="radio" name="type" id="actionGetFileSQL" value="SQL">
+                    <label for="actionGetFileSQL" style="width: 250px">Download files as SQL</label>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="center">
+                    <hr class="eightyPercent">
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="center">
+[file_checkboxes]
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="center">
+                    <hr class="eightyPercent">
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="3" class="center">
+                    <input type="submit" id="btnCBSub" value="Download Zip">
+                  </td>
+                </tr>
+              </table>
+            </form>
+            <div id="status">[status]</div>
+          </div>
+[showHelp]
+          <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+          <script type="text/javascript">
+            $(function(){
+              $('#cbSelectAll').click(function(){$('.cbFiles').prop('checked', $(this).prop('checked'));});
+            });
+          </script>
+<!-- Section DownloadForm End -->
+<!-- Section UpperScripts Start -->
+[blank]    <script type="text/javascript">
+      function showMe() {
+        var sh = document.getElementById('showHelp');
+        var tf = document.getElementById('downloadForm');
+        sh.style.display = 'block';
+        tf.style.display = 'none';
+      }
+      function hideMe() {
+        var sh = document.getElementById('showHelp');
+        var tf = document.getElementById('downloadForm');
+        sh.style.display = 'none';
+        tf.style.display = 'block';
+      }
+      function showHide() {
+        var display = document.getElementById('showHelp').style.display;
+        switch (display) {
+          case '':
+          case 'none':
+            return showMe();
+            break;
+          case 'block':
+            return hideMe();
+            break;
+          default:
+            alert('display = ' + display);
+        }
+      }
+    </script>
+<!-- Section UpperScripts End -->
+<!-- Section ClearAIML Start -->
+[blank]          <div class="bold red center">Deleting AIML categories from the database is <strong>permanent</strong>!
+          This action <strong>CANNOT</strong> be undone!</div>
+          <div id="clearForm">
+          <form name="clearForm" action="index.php?page=clear" method="POST" onsubmit="return verify()">
+          <table class="formTable">
+            <tr>
+              <td>
+                <input type="radio" name="action" value="void" id="actionClearFile" checked="checked">
+                <label for="actionClearFile" style="width: 210px; text-align: left">Clear categories from this AIML file: </label><br />
+              </td>
+              <td>
+                <input type="radio" name="action" id="actionClearAll" value="clear">
+                <label for="actionClearAll" style="width: 250px">Clear <strong>ALL</strong> AIML categories (Purge database)</label>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <select name="clearFile" id="clearFile" size="1" style="margin: 14px;" onclick="document.getElementById('actionClearFile').checked = true" onchange="document.getElementById('actionClearFile').checked = true">
+                  <option value="null" selected="selected">Choose a file</option>
+[selectOptions]
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">
+                <input type="submit" name="" value="Submit">
+              </td>
+            </tr>
+          </table>
+          </form>
+          </div>
+[showHelp]
+          <script type="text/javascript">
+            function verify()
+{
+
+
+              var fn = document.getElementById('clearFile').value;
+              var clearAll = document.getElementById('actionClearAll').checked;
+              if (fn == 'null' && clearAll === false) return false;
+              if (clearAll) fn = 'repository for all files';
+              return confirm('This will delete all categories from the AIML file ' + fn + '! This cannot be undone! Are you sure you want to do this?');
+            }
+          </script>
+<!-- Section ClearAIML End -->
+<!-- Section BugForm Start -->
+[blank]      <form method="POST" action="index.php?page=bugs" name="contactForm">
+        <input name="func" value="sendMail" type="hidden">
+        <input name="contactMe" value="true" type="hidden">
+        <table border="1" width="100%">
+          <tr>
+            <td align="center" width="33%">
+              Your Name:<br />
+              <input name="name" value="" type="text">
+            </td>
+            <td align="center">
+              Your Email Address:<br />
+              <input name="email" value="[debugemail]" type="text">
+            </td>
+            <td align="center" width="33%">
+              Subject:<br />
+              <input name="subject" value="Bug Report Submission" type="text">
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3" align="center">
+              Message:<br />
+              <textarea rows="7" id="report_message" name="message" placeholder="Your Message Here..."></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p class="indent">
+                Use this handy form to submit a bug report to Liz and Company over at the Program O website.
+                Please describe the problem as completely as possible, including what actions you were trying
+                to perform at the time that you noticed the problem.
+              </p>
+            </td>
+            <td align="center">
+              <img id="capImg" src="captcha.php" title="Captcha script ©2009-2011 Geek Cave Creations"><br />
+              <input onclick="renewImage(); return false" value="Refresh" type="button">
+            </td>
+            <td>
+              <p class="indent">
+                Answer the question you see in the image on the left into the text area
+                below. We are looking for a one word answer (no numbers). Sry, but bots are not allowed.
+              </p>
+              <input name="captcha" type="text">
+            </td>
+          </tr>
+          <tr>
+            <td colspan="4" align="center">
+              <input name="Post" id="report_submit" value="Submit Bug Report" type="submit">
+            </td>
+          </tr>
+        </table>
+      </form>
+<!-- Section BugForm End -->

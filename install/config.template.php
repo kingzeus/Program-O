@@ -1,13 +1,13 @@
 <?php
 /***************************************
-* http://www.program-o.com
-* PROGRAM O
-* Version: 2.4.2
-* FILE: config/global_config.php
-* AUTHOR: ELIZABETH PERREAU AND DAVE MORTON
-* DATE: January 16th, 2013
-* DETAILS: this file is the ONLY configuration file for the bot and bot admin
-***************************************/
+  * http://www.program-o.com
+  * PROGRAM O
+  * Version: 2.4.6
+  * FILE: config/global_config.php
+  * AUTHOR: Elizabeth Perreau and Dave Morton
+  * DATE: 12-09-2014
+  * DETAILS: this file is the ONLY configuration file for the bot and bot admin
+  ***************************************/
     //------------------------------------------------------------------------
     // Paths - only set this manually if the below doesnt work
     //------------------------------------------------------------------------
@@ -30,6 +30,7 @@
 
     define('_INC_PATH_',_BASE_DIR_.$path_separator);
     define('_ADMIN_PATH_',_BASE_DIR_.'admin'.$path_separator);
+    define('_SESSION_PATH_',_ADMIN_PATH_.'[session_dir]'.$path_separator);
     define('_ADMIN_URL_',_BASE_URL_.'admin/');
     define('_CAPTCHA_PATH_',_ADMIN_PATH_.'captcha-images'.$path_separator);
     define('_BOTCORE_PATH_',_BASE_DIR_.'chatbot'.$path_separator.'core'.$path_separator);
@@ -69,6 +70,15 @@
     ini_set('error_log', _LOG_PATH_ . 'error.log');
     ini_set('html_errors', false);
     ini_set('display_errors', false);
+
+    //------------------------------------------------------------------------
+    // Session handling
+    //------------------------------------------------------------------------
+    $session_lifetime = 86400; // 24 hours, expressed in seconds
+    $server_name = filter_input(INPUT_SERVER,'SERVER_NAME');
+    $session_cookie_path = str_replace("http://$server_name", '', _ADMIN_URL_);
+    session_set_cookie_params($session_lifetime, $session_cookie_path);
+    ini_set('session.save_path', _SESSION_PATH_);
 
     //------------------------------------------------------------------------
     // parent bot
@@ -142,7 +152,8 @@
     //------------------------------------------------------------------------
 
     //initially set here but overwriten by bot configuration in the admin panel
-    $debug_level = $debug_level;
+  /** @noinspection PhpSillyAssignmentInspection */
+  $debug_level = $debug_level;
 
     //for quick debug to override the bot config debug options
     //0 - Do not show anything

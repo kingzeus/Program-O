@@ -2,7 +2,7 @@
 /***************************************
 * www.program-o.com
 * PROGRAM O 
-* Version: 2.4.2
+* Version: 2.4.6
 * FILE: chatbot/core/user/handle_user.php
 * AUTHOR: Elizabeth Perreau and Dave Morton
 * DATE: MAY 17TH 2014
@@ -14,7 +14,7 @@
  * function load_new_client_defaults()
  * A function to intialise clients values
  * @param  array $convoArr - the current state of the conversation array
- * @return the update $convoArr
+ * @return array $convoArr
 **/
 function load_new_client_defaults($convoArr)
 {
@@ -31,7 +31,7 @@ function load_new_client_defaults($convoArr)
  * function get_user_id()
  * A function to get the user id
  * @param  array $convoArr - the current state of the conversation array
- * @return the update $convoArr
+ * @return array $convoArr
 **/
 function get_user_id($convoArr)
 {
@@ -40,16 +40,11 @@ function get_user_id($convoArr)
   runDebug(__FILE__, __FUNCTION__, __LINE__, 'Getting user ID.', 2);
   //get undefined defaults from the db
   $sql = "SELECT * FROM `$dbn`.`users` WHERE `session_id` = '".$convoArr['conversation']['convo_id']."' limit 1";
-  $sth = $dbConn->prepare($sql);
-  $sth->execute();
-  $result = $sth->fetchAll();
-
+  $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
   $count = count($result);
   if($count>0)
   {
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $row = $sth->fetch();
+    $row = $result[0];
     $convoArr['conversation']['user_id'] = $row['id'];
     // add user name, if set
     $convoArr['conversation']['user_name'] = (!empty($convoArr['client_properties']['name'])) ? $convoArr['client_properties']['name'] : (!empty($row['user_name'])) ? $row['user_name'] : $unknown_user;
@@ -69,12 +64,14 @@ function get_user_id($convoArr)
   
 }
 
-/**
- * function intisaliseUser()
- * This function gets data such as the referer to store in the db
- * @param string $convo_id - user session
- * @return int $user_id - the newly created user id
-**/
+  /**
+   * function intisaliseUser()
+   * This function gets data such as the referer to store in the db
+   *
+   * @param $convoArr
+   * @internal param string $convo_id - user session
+   * @return int $user_id - the newly created user id
+   */
 function intisaliseUser($convoArr)
 {
   runDebug(__FILE__, __FUNCTION__, __LINE__, 'Initializing user.', 2);

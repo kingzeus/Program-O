@@ -3,7 +3,7 @@
   /***************************************
   * http://www.program-o.com
   * PROGRAM O
-  * Version: 2.4.2
+  * Version: 2.4.6
   * FILE: install_programo.php
   * AUTHOR: Elizabeth Perreau and Dave Morton
   * DATE: 02-13-2013
@@ -16,15 +16,25 @@
   $fatalError = '';
   $myPHP_Version = (float) phpversion();
   $pdoSupport = (class_exists('PDO'));
-  //$pdoSupport = false;
-  //$myPHP_Version = 5.0;
   If ($myPHP_Version < 5.2) $fatalError .= "<p class='red bold'>We're sorry, but Program O requires PHP version 5.2 or greater to function. Please ask your hosting provider to upgrade.</p>";
   If (!$pdoSupport) $fatalError .= "<p class='red bold'>Support for PHP Data Objects (PDO) was not detected! This is required for Program O to function. Please ask your hosting provider to upgrade.</p>";
   $no_unicode_message = (function_exists('mb_check_encoding')) ? '' : "<p class=\"red bold\">Warning! Unicode Support is not available on this server. Non-English languages will not display properly. Please ask your hosting provider to enable the PHP mbstring extension to correct this.</p>\n";
-  //$no_unicode_message = "<p class=\"red bold\">Warning! Unicode Support is not available on this server. Non-English languages will not display properly. Please ask your hosting provider to enable the PHP mbstring extension to correct this.</p>\n";
   $errorMessage = (!empty ($_SESSION['errorMessage'])) ? $_SESSION['errorMessage'] : '';
   $errorMessage .= $no_unicode_message;
   require_once ('install_config.php');
+  $dirArray = glob(_ADMIN_PATH_ . "ses_*",GLOB_ONLYDIR);
+  $session_dir = (empty($dirArray)) ? 'ses_' . md5(time()) : $dirArray[0];
+  $dupPS = "$path_separator$path_separator";
+  $session_dir = str_replace($dupPS, $path_separator, $session_dir); // remove double path separators when necessary
+  $writeCheckArray = array('config' => _CONF_PATH_, 'debug' => _DEBUG_PATH_, 'logs' => _LOG_PATH_);
+
+  foreach ($writeCheckArray as $key => $folder)
+  {
+    if (!is_writable($folder))
+    {
+      $errorMessage .= "<p class='red bold'>The $key folder cannot be written to, or does not exist. Please correct this before you continue.</p>\n";
+    }
+  }
   define('SECTION_START', '<!-- Section [section] Start -->'); # search params for start and end of sections
   define('SECTION_END', '<!-- Section [section] End -->'); # search params for start and end of sections
   define('PHP_SELF', $_SERVER['SCRIPT_NAME']); # This is more secure than $_SERVER['PHP_SELF'], and returns more or less the same thing
@@ -36,6 +46,7 @@
   $page_template = file_get_contents('install.tpl.htm');
   $page = (isset ($_REQUEST['page'])) ? $_REQUEST['page'] : 1;
   $action = (isset ($_REQUEST['action'])) ? $_REQUEST['action'] : '';
+  $message = '';
   if (!empty ($action))
   {
     $message = $action($page);
@@ -70,6 +81,14 @@ endPage;
 
   exit($content);
 
+  /**
+   * Function getSection
+   *
+   * * @param $sectionName
+   * @param      $page_template
+   * @param bool $notFoundReturn
+   * @return string
+   */
   function getSection($sectionName, $page_template, $notFoundReturn = true)
   {
     $sectionStart = str_replace('[section]', $sectionName, SECTION_START);
@@ -93,9 +112,17 @@ endPage;
     return trim($out);
   }
 
+  /**
+   * Function Save
+   *
+   *
+   * @return string
+   */
   function Save()
   {
-    global $page_template, $error_response;
+    global $page_template, $error_response, $session_dir;
+    $tagSearch = array();
+    $varReplace = array();
     $pattern = "RANDOM PICKUP LINE";
     $errorMessage = '';
     #$error_response = "No AIML category found. This is a Default Response.";
@@ -106,6 +133,15 @@ endPage;
     $myPostVars = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
     ksort($myPostVars);
     $configContents = file_get_contents(_INSTALL_PATH_ . 'config.template.php');
+    $configContents = str_replace('[session_dir]', $session_dir, $configContents);
+    if (!file_exists(_ADMIN_PATH_ . $session_dir))
+    {
+      // Create the sessions folder, and set permissions
+      mkdir(_ADMIN_PATH_ . $session_dir, 0755);
+
+      // Place an empty index file in the sessions folder to prevent direct access to the folder from a web browser
+      file_put_contents(_ADMIN_PATH_ . $session_dir . DIRECTORY_SEPARATOR . 'index.html', '');
+    }
     foreach ($myPostVars as $key => $value)
     {
       $tagSearch[] = "[$key]";
@@ -118,7 +154,7 @@ endPage;
     $dbn = $myPostVars['dbn'];
     $dbu = $myPostVars['dbu'];
     $dbp = $myPostVars['dbp'];
-        try {
+    try {
       $dbConn = new PDO("mysql:host=$dbh;dbname=$dbn;charset=utf8", $dbu, $dbp);
       $dbConn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       $dbConn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);

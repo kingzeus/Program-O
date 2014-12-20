@@ -2,7 +2,7 @@
 /***************************************
   * http://www.program-o.com
   * PROGRAM O
-  * Version: 2.4.2
+  * Version: 2.4.6
   * FILE: misc_functions.php
   * AUTHOR: Elizabeth Perreau and Dave Morton
   * DATE: 05-22-2013
@@ -10,15 +10,14 @@
   ***************************************/
 
   /**
-    * function get_cURL
-    * Uses PHP's cURL functions to obtain data from "outside locations"
-    * @param (string) $url - The URL or IP address to access
-    * @param (array) $options - An associative array of CURLOPT_* options, where the
-      index is a CURLOPT_* constant and the value is the option's, well, value.
-    * @param (array) $params - Only used when POSTing to a URL, it's the list of variables
-      to send.
-    * @return (string) $out - The returned value from the curl_exec() call.
-    **/
+   * function get_cURL
+   * Uses PHP's cURL functions to obtain data from "outside locations"
+   *
+   * @param (string) $url - The URL or IP address to access
+   * @param array $options
+   * @param array $params
+   * @return mixed|string (string) $out - The returned value from the curl_exec() call.
+   */
 
   function get_cURL($url, $options = array(), $params = array())
   {
@@ -46,11 +45,12 @@
   }
 
   /**
-    * function normalize_text
-    * Transforms text to uppercase, removes all punctuation, and strips extra whitespace
-    * @param (string) $text - The text to perform the transformations on
-    * @return (string) $normalized_text - The completely transformed text
-    **/
+   * function normalize_text
+   * Transforms text to uppercase, removes all punctuation, and strips extra whitespace
+   *
+   * @param (string) $text - The text to perform the transformations on
+   * @return mixed|string (string) $normalized_text - The completely transformed text
+   */
     function normalize_text($text)
     {
       runDebug(__FILE__, __FUNCTION__, __LINE__,"Begin normalization - text = '$text'", 4);
@@ -62,5 +62,40 @@
       return $normalized_text;
     }
 
+  /**
+   * Function getFooter
+   *
+   *
+   * @return string
+   */
+  function getFooter() {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $name = (isset($_SESSION['poadmin']['name'])) ?  $_SESSION['poadmin']['name'] : 'unknown';
+    $lip = (isset($_SESSION['poadmin']['lip'])) ?  $_SESSION['poadmin']['lip'] : 'unknown';
+    $last = (isset($_SESSION['poadmin']['last_login'])) ?  $_SESSION['poadmin']['last_login'] : 'unknown';
+    $llast = (isset($_SESSION['poadmin']['prior_login'])) ?  $_SESSION['poadmin']['prior_login'] : 'unknown';
+    $admess = "You are logged in as: $name from $ip since: $last";
+    $admess .= "<br />You last logged in from $lip on $llast";
+    $today = date("Y");
+    $out = <<<endFooter
+    <p>&copy; $today My Program-O<br />$admess</p>
+endFooter;
+    return $out;
+  }
 
-?>
+  /*
+   * function session_gc
+   * Performs garbage collection on expired session files
+   *
+   * @return (void)
+   */
+  function session_gc()
+  {
+    global $session_lifetime;
+    $session_files = glob(_SESSION_PATH_ . 'sess_*');
+    foreach($session_files as $file)
+    {
+      $lastAccessed = filemtime($file);
+      if ($lastAccessed < (time() - $session_lifetime)) unlink($file);
+    }
+  }

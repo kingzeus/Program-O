@@ -69,10 +69,10 @@ endScript;
   $topNav = $template->getSection('TopNav');
   $leftNav = $template->getSection('LeftNav');
   $main = $template->getSection('Main');
-  $topNavLinks = makeLinks('top', $topLinks, 12);
+  
   $navHeader = $template->getSection('NavHeader');
   $rightNav = $template->getSection('RightNav');
-  $leftNavLinks = makeLinks('left', $leftLinks, 12);
+  
   $rightNavLinks = getWordCensorWords();
   $FooterInfo = getFooter();
   $errMsgClass = (!empty ($msg)) ? "ShowError" : "HideError";
@@ -87,15 +87,19 @@ endScript;
   $mainContent = str_replace('[wordCensorForm]', wordCensorForm(), $mainContent);
   $rightNav = str_replace('[rightNavLinks]', $rightNavLinks, $rightNav);
   $rightNav = str_replace('[navHeader]', $navHeader, $rightNav);
-  $rightNav = str_replace('[headerTitle]', paginate(), $rightNav);
+  $rightNav = str_replace('[headerTitle]', wcPaginate(), $rightNav);
 
-  function paginate()
+  /**
+   * Function wcPaginate
+   *
+   *
+   * @return string
+   */
+  function wcPaginate()
   {
     global $dbConn, $request_vars;
     $sql = "select count(*) from `wordcensor` where 1";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $row = $sth->fetch(PDO :: FETCH_ASSOC);
+    $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
     $rowCount = $row['count(*)'];
     $lastPage = intval($rowCount / 50);
     $remainder = ($rowCount / 50) - $lastPage;
@@ -123,6 +127,12 @@ endScript;
     return $out;
   }
 
+  /**
+   * Function getWordCensorWords
+   *
+   *
+   * @return string
+   */
   function getWordCensorWords()
   {
     global $dbConn, $template, $request_vars;
@@ -138,9 +148,7 @@ endScript;
     $baseLink = $template->getSection('NavLink');
     $links = '      <div class="userlist">' . "\n";
     $count = 0;
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $result = $sth->fetchAll(PDO :: FETCH_ASSOC);
+    $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
     foreach ($result as $row)
     {
       $linkId = $row['censor_id'];
@@ -165,6 +173,12 @@ endScript;
     return $links;
   }
 
+  /**
+   * Function wordCensorForm
+   *
+   *
+   * @return mixed|string
+   */
   function wordCensorForm()
   {
     global $template, $request_vars;
@@ -174,6 +188,12 @@ endScript;
     return $out;
   }
 
+  /**
+   * Function insertWordCensor
+   *
+   *
+   * @return string
+   */
   function insertWordCensor()
   {
     global $dbConn, $template, $msg, $request_vars;
@@ -201,6 +221,12 @@ endScript;
     return $msg;
   }
 
+  /**
+   * Function delWordCensor
+   *
+   * * @param $id
+   * @return void
+   */
   function delWordCensor($id)
   {
     global $dbConn, $template, $msg;
@@ -227,6 +253,12 @@ endScript;
     }
   }
 
+  /**
+   * Function runWordCensorSearch
+   *
+   *
+   * @return string
+   */
   function runWordCensorSearch()
   {
     global $dbConn, $template, $request_vars;
@@ -243,9 +275,7 @@ endScript;
                     </tr>
                   </thead>
                 <tbody>';
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $result = $sth->fetchAll(PDO :: FETCH_ASSOC);
+    $result = db_fetchAll($sql, null, __FILE__, __FUNCTION__, __LINE__);
     $i = 0;
     foreach ($result as $row)
     {
@@ -286,15 +316,19 @@ endScript;
     return $htmlresults;
   }
 
+  /**
+   * Function editWordCensorForm
+   *
+   * * @param $id
+   * @return mixed|string
+   */
   function editWordCensorForm($id)
   {
     global $dbConn, $template, $request_vars, $dbConn;
     $group = (isset ($request_vars['group'])) ? $request_vars['group'] : 1;
     $form = $template->getSection('EditWordCensorForm');
     $sql = "SELECT * FROM `wordcensor` WHERE `censor_id` = '$id' LIMIT 1";
-    $sth = $dbConn->prepare($sql);
-    $sth->execute();
-    $row = $sth->fetch(PDO :: FETCH_ASSOC);
+    $row = db_fetch($sql, null, __FILE__, __FUNCTION__, __LINE__);
     $uc_word_to_censor = (IS_MB_ENABLED) ? mb_strtoupper($row['word_to_censor']) :
                          strtoupper($row['word_to_censor']);
     $uc_replace_with = (IS_MB_ENABLED) ? mb_strtoupper($row['replace_with']) : strtoupper(
