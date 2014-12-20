@@ -55,13 +55,12 @@
 
   $form_vars = array_merge((array)$form_vars_get, (array)$form_vars_post);
   #save_file(_LOG_PATH_ . 'Convo_start_form_vars.txt', print_r($form_vars, true));
-  $say = ($say !== '') ? $say : trim($form_vars['say']);// É¾³ýÁ½¶Ë¿Õ¸ñ
   if (!isset($form_vars['say']))
   {
     error_log('Empty input! form vars = ' . print_r($form_vars, true) . PHP_EOL, 3, _LOG_PATH_ . 'convostart.txt');
     $form_vars['say'] = '';
   }
-  $say = ($say !== '') ? $say : trim($form_vars['say']);
+  $say = ($say !== '') ? $say : trim($form_vars['say']); // É¾³ýÁ½¶Ë¿Õ¸ñ
   $session_name = 'PGOv' . VERSION;
   session_name($session_name);
   session_start();
