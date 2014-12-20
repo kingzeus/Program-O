@@ -20,7 +20,7 @@ function make_conversation($convoArr){
 	
 	runDebug( __FILE__, __FUNCTION__, __LINE__, "Making conversation",4);
 	//get the user input and clean it
-	$convoArr['aiml']['lookingfor'] =  normalize_text($convoArr['user_say'][1]);
+	$convoArr['aiml']['lookingfor'] =  normalize_text($convoArr['user_say'][1]); // 格式化需要搜索的文本
 	//find an aiml match in the db
 	$convoArr = get_aiml_to_parse($convoArr);
 	$convoArr = parse_matched_aiml($convoArr,'normal');

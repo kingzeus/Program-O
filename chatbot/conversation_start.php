@@ -43,6 +43,7 @@
   $dbConn = db_open();
   //initialise globals
   //$convoArr = array();
+  // 初始化数据
   $convoArr = intialise_convoArray($convoArr);
   $new_convo_id = false;
   $old_convo_id = false;
@@ -57,7 +58,7 @@
     : ($form_vars_get !== null) ? $form_vars_get
     : $form_vars_post;
   #save_file(_LOG_PATH_ . 'Convo_start_form_vars.txt', print_r($form_vars, true));
-  $say = ($say !== '') ? $say : trim($form_vars['say']);
+  $say = ($say !== '') ? $say : trim($form_vars['say']);				// 删除两端空格
   $session_name = 'PGOv' . VERSION;
   session_name($session_name);
   session_start();
@@ -115,7 +116,7 @@
       $row = $sth->fetch();
 
 
-
+	 // 获取对应的 uid
       if ($row !== false)
       {
         $user_id = $row['id'];
@@ -131,19 +132,19 @@
     //add any pre-processing addons
 
 
-    $say = run_pre_input_addons($convoArr, $say);
+    $say = run_pre_input_addons($convoArr, $say);		// 拼写检查
     $bot_id = (isset($form_vars['bot_id'])) ? $form_vars['bot_id'] : $bot_id;
     runDebug(__FILE__, __FUNCTION__, __LINE__, "Details:\nUser say: " . $say . "\nConvo id: " . $convo_id . "\nBot id: " . $bot_id . "\nFormat: " . $form_vars['format'], 2);
     //get the stored vars
     $convoArr = read_from_session();
-    $convoArr = load_default_bot_values($convoArr);
+    $convoArr = load_default_bot_values($convoArr);		// 从数据表 botpersonality 读取数据到$convoArr['bot_properties'];
     //now overwrite with the recieved data
     $convoArr = check_set_convo_id($convoArr);
     $convoArr = check_set_bot($convoArr);
     $convoArr = check_set_user($convoArr);
     if (!isset($convoArr['conversation']['user_id']) and isset($user_id)) $convoArr['conversation']['user_id'] = $user_id;
     $convoArr = check_set_format($convoArr);
-    $convoArr = load_that($convoArr);
+    $convoArr = load_that($convoArr);					// 载入之前对话
     $convoArr = buildNounList($convoArr);
     $convoArr['time_start'] = $time_start;
     $convoArr = load_bot_config($convoArr);
@@ -165,12 +166,13 @@
     $convoArr = add_new_conversation_vars($say, $convoArr);
 
     //parse the aiml
-    $convoArr = make_conversation($convoArr);
+    $convoArr = make_conversation($convoArr);			// 生成 aiml 格式
     $convoArr = run_mid_level_addons($convoArr);
     $convoArr = log_conversation($convoArr);
     #$convoArr = log_conversation_state($convoArr);
     $convoArr = write_to_session($convoArr);
-    $convoArr = get_conversation($convoArr);
+    
+    $convoArr = get_conversation($convoArr);			// 转换输出格式
     $convoArr = run_post_response_useraddons($convoArr);
     //return the values to display
     $display = $convoArr['send_to_user'];
