@@ -43,8 +43,7 @@
   $dbConn = db_open();
   //initialise globals
   //$convoArr = array();
-  // 初始化数据
-  $convoArr = intialise_convoArray($convoArr);
+  $convoArr = intialise_convoArray($convoArr);	// 初始化对话属性
   $new_convo_id = false;
   $old_convo_id = false;
   $say = '';
@@ -79,6 +78,7 @@
     $lc_say = (IS_MB_ENABLED) ? mb_strtolower($say) : strtolower($say);
     if ($lc_say == 'clear properties')
     {
+		// 清除数据
       runDebug(__FILE__, __FUNCTION__, __LINE__, "Clearing client properties and starting over.", 4);
       $convoArr = read_from_session();
       $_SESSION = array();
@@ -129,24 +129,25 @@
     }
     //add any pre-processing addons
 
-
-    $say = run_pre_input_addons($convoArr, $say);		// 拼写检查
+	// 拼写检测
+    $say = run_pre_input_addons($convoArr, $say);
     /** @noinspection PhpUndefinedVariableInspection */
     $bot_id = (isset($form_vars['bot_id'])) ? $form_vars['bot_id'] : $bot_id;
     runDebug(__FILE__, __FUNCTION__, __LINE__, "Details:\nUser say: " . $say . "\nConvo id: " . $convo_id . "\nBot id: " . $bot_id . "\nFormat: " . $form_vars['format'], 2);
     //get the stored vars
     $convoArr = read_from_session();
-    $convoArr = load_default_bot_values($convoArr);		// 从数据表 botpersonality 读取数据到$convoArr['bot_properties'];
+	// 从数据表 botpersonality 载入机器人属性
+    $convoArr = load_default_bot_values($convoArr);
     //now overwrite with the recieved data
-    $convoArr = check_set_convo_id($convoArr);
-    $convoArr = check_set_bot($convoArr);
-    $convoArr = check_set_user($convoArr);
+    $convoArr = check_set_convo_id($convoArr);	// 检测对话id是否设置
+    $convoArr = check_set_bot($convoArr);		// 设置对话属性中的机器人数据
+    $convoArr = check_set_user($convoArr);		// 设置用户属性
     if (!isset($convoArr['conversation']['user_id']) and isset($user_id)) $convoArr['conversation']['user_id'] = $user_id;
-    $convoArr = check_set_format($convoArr);
-    $convoArr = load_that($convoArr);					// 载入之前对话
-    $convoArr = buildNounList($convoArr);
+    $convoArr = check_set_format($convoArr);	// 检测输出格式
+    $convoArr = load_that($convoArr);			// 载入之前的聊天记录
+    $convoArr = buildNounList($convoArr);		// 载入文件
     $convoArr['time_start'] = $time_start;
-    $convoArr = load_bot_config($convoArr);
+    $convoArr = load_bot_config($convoArr);		// 从 bots 表载入机器人配置
     //if totallines isn't set then this is new user
     runDebug(__FILE__, __FUNCTION__, __LINE__,"Debug level = $debug_level", 0);
     $debug_level = $convoArr['conversation']['debug_level'];

@@ -564,7 +564,7 @@
     $row = db_fetch($sql, array(':convo_id' => $convo_id), __FILE__, __FUNCTION__, __LINE__);
     if ($row === false)
     {
-      $convoArr = intisaliseUser($convoArr);
+      $convoArr = intisaliseUser($convoArr);	//初始化用户
       $user_id = $convoArr['conversation']['user_id'];
       $user_name = $unknown_user;
     }
