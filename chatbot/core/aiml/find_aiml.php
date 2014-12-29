@@ -72,6 +72,7 @@
 
   /**
    * Counts the words in a sentence
+   * 计算句子中的字数
    * @param  string $sentence
    * @return int
    **/
@@ -258,6 +259,7 @@
 
   /**
    * Takes all the relevant sql results and scores them to find the most likely match with the aiml
+   * 计算模式的积分
    *
    * @param array  $convoArr
    * @param array  $allrows
@@ -735,7 +737,7 @@
     $aiml_pattern = $convoArr['conversation']['default_aiml_pattern'];
     $bot_parent_id = $convoArr['conversation']['bot_parent_id'];
     $raw_that = (isset ($convoArr['that'])) ? print_r($convoArr['that'], true) : '';
-    //check if match in user defined aiml
+    //check if match in user defined aiml	获取用户定义的aiml
     $allrows = find_userdefined_aiml($convoArr);
     //if there is no match in the user defined aiml table
     if ((!isset ($allrows)) || (count($allrows) <= 0))
@@ -744,7 +746,7 @@
       $allrows = find_aiml_matches($convoArr);
       //unset all irrelvant matches
       $allrows = unset_all_bad_pattern_matches($convoArr, $allrows, $lookingfor);
-      //score the relevant matches
+      //score the relevant matches 计算积分
       $allrows = score_matches($convoArr, $allrows, $lookingfor);
       //get the highest
       $allrows = get_highest_scoring_row($convoArr, $allrows, $lookingfor);

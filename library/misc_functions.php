@@ -54,8 +54,8 @@
     function normalize_text($text)
     {
       runDebug(__FILE__, __FUNCTION__, __LINE__,"Begin normalization - text = '$text'", 4);
-      $normalized_text = preg_replace('/[[:punct:]]/uis', ' ', $text);
-      $normalized_text = preg_replace('/\s\s+/', ' ', $normalized_text);
+      $normalized_text = preg_replace('/[[:punct:]]/uis', ' ', $text);		// 去除标点符号
+      $normalized_text = preg_replace('/\s\s+/', ' ', $normalized_text);	// 把分隔符替换成空格
       $normalized_text = (IS_MB_ENABLED) ? mb_strtoupper($normalized_text) : strtoupper($normalized_text);
       $normalized_text = trim($normalized_text);
       runDebug(__FILE__, __FUNCTION__, __LINE__,"Normalization complete. Text = '$normalized_text'", 4);
